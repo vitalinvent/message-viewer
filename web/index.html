@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Message Viewer</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0b1020;--panel:#111a2d;--panel2:#17233a;--line:#293954;--txt:#e8eef9;--muted:#a0aec4;--accent:#78a9ff;--green:#6ed6a0;--red:#ff8c96;--amber:#ffd28a}
+    *{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#0b1020,#101a2c 55%,#0b1020);color:var(--txt);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    header{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px clamp(16px,3vw,36px);border-bottom:1px solid var(--line);background:#0b1020cc;position:sticky;top:0;z-index:5;backdrop-filter:blur(10px)}
+    h1{font-size:20px;margin:0;font-weight:750;letter-spacing:.2px}h1 span{color:var(--accent)}.sub{color:var(--muted);font-size:12px;margin-top:4px}.status{padding:7px 11px;border:1px solid var(--line);border-radius:999px;color:var(--muted);white-space:nowrap}.status.good{color:var(--green);border-color:#28614b}.status.bad{color:var(--red);border-color:#6a333d}
+    main{max-width:1800px;margin:auto;padding:22px clamp(12px,2.5vw,32px) 40px;display:grid;gap:18px}.panel{border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,#121c30f5,#101829f5);box-shadow:0 12px 35px #0002;overflow:hidden}.panel-head{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}.panel-head h2{margin:0;font-size:15px}.panel-body{padding:18px}.settings-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}.field{grid-column:span 3;min-width:0}.field.wide{grid-column:span 6}.field.full{grid-column:span 12}.field.half{grid-column:span 2}.field label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}.field input,.field select{width:100%;min-width:0;padding:10px 11px;border:1px solid #344762;border-radius:9px;color:var(--txt);background:#0b1324;outline:none}.field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px #78a9ff22}.hint{font-size:11px;color:var(--muted);margin-top:5px}.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.btn{border:1px solid #385071;background:#1a2b46;color:var(--txt);padding:9px 13px;border-radius:9px;cursor:pointer;font:inherit;transition:.15s}.btn:hover{background:#233a5d;border-color:#5274a3}.btn.primary{background:#2862bb;border-color:#3979d6}.btn.primary:hover{background:#3474d4}.btn:disabled{opacity:.55;cursor:wait}.btn.small{font-size:12px;padding:6px 9px}.range-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.range-row .btn{padding:6px 10px;font-size:12px}.section-label{grid-column:span 12;color:var(--accent);font-size:11px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #293954;padding-bottom:6px;margin-top:3px}.notice{padding:11px 13px;border:1px solid #344762;background:#0c1526;border-radius:10px;color:var(--muted);font-size:12px}.notice.warn{border-color:#6b5530;color:var(--amber)}.hidden{display:none!important}.summary{display:flex;gap:10px;flex-wrap:wrap}.metric{border:1px solid var(--line);border-radius:10px;padding:10px 13px;min-width:120px;background:#0b1425}.metric b{display:block;font-size:20px}.metric span{color:var(--muted);font-size:11px}.result-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.table-wrap{overflow:auto;border-top:1px solid var(--line);max-height:62vh}.empty{padding:36px 12px;text-align:center;color:var(--muted)}table{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;font-size:12px}th,td{padding:10px 12px;max-width:300px;min-width:95px;border-bottom:1px solid #25344c;border-right:1px solid #25344c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}th{position:sticky;top:0;background:#1b2941;color:#d4e4ff;font-weight:650;z-index:2}td:first-child,th:first-child{position:sticky;left:0;background:#121e32;z-index:1}th:first-child{z-index:3;background:#1b2941}tbody tr{cursor:pointer}tbody tr:hover td{background:#1b2b45}tbody tr.selected td{background:#203a5d}.pill{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:var(--muted);font-size:11px}.detail{display:grid;grid-template-columns:1fr 1fr;gap:12px}.detail h3{font-size:12px;color:var(--muted);font-weight:600;margin:0 0 7px}pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;background:#080e1b;border:1px solid var(--line);border-radius:9px;padding:13px;max-height:440px;overflow:auto;color:#cce1ff;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace}.footer{color:#73829c;font-size:11px;text-align:center;padding:3px 0 0}
+    @media(max-width:1000px){.field,.field.wide{grid-column:span 6}.field.half{grid-column:span 4}.detail{grid-template-columns:1fr}}
+    @media(max-width:600px){header{align-items:flex-start;flex-direction:column}.field,.field.wide,.field.half{grid-column:span 12}.panel-body{padding:13px}.panel-head{padding:13px}}
+  </style>
+</head>
+<body>
+<header>
+  <div><h1><span>◈</span> Message Viewer</h1><div class="sub">История JetStream · фильтр по времени · динамические поля JSON</div></div>
+  <div id="status" class="status">Не подключено</div>
+</header>
+<main>
+  <section class="panel">
+    <div class="panel-head"><h2>Источник и подключение</h2><div class="toolbar"><button class="btn small" id="testBtn">Проверить подключение</button></div></div>
+    <div class="panel-body">
+      <div class="settings-grid">
+        <div class="field"><label for="source">Источник сообщений</label><select id="source"><option value="nats">NATS JetStream — работает</option><option value="kafka">Kafka — заготовка</option><option value="rabbitmq">RabbitMQ — заготовка</option></select></div>
+        <div class="field wide"><label for="natsURL">NATS URL</label><input id="natsURL" value="nats://127.0.0.1:4222" placeholder="nats://host:4222"></div>
+        <div class="field"><label for="stream">JetStream stream</label><input id="stream" placeholder="Например, EVENTS"></div>
+        <div class="field"><label for="subject">Subject filter</label><input id="subject" value=">" placeholder="events.> или >"><div class="hint">NATS wildcard: * — один сегмент, &gt; — остаток</div></div>
+        <div class="section-label">Авторизация (оставьте пустой ненужный вариант)</div>
+        <div class="field"><label for="user">Username</label><input id="user" autocomplete="username" placeholder="необязательно"></div>
+        <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" placeholder="необязательно"></div>
+        <div class="field wide"><label for="token">Token</label><input id="token" type="password" autocomplete="off" placeholder="Используется вместо username/password"></div>
+      </div>
+      <div id="kafkaSettings" class="settings-grid hidden" style="margin-top:16px">
+        <div class="section-label">Kafka · настройки-заготовки</div>
+        <div class="field wide"><label for="kafkaBrokers">Bootstrap servers</label><input id="kafkaBrokers" value="127.0.0.1:9092" placeholder="broker1:9092,broker2:9092"></div>
+        <div class="field"><label for="kafkaTopic">Topic</label><input id="kafkaTopic" value="events" placeholder="events"></div>
+        <div class="field"><label for="kafkaGroup">Consumer group</label><input id="kafkaGroup" value="message-viewer" placeholder="message-viewer"></div>
+      </div>
+      <div id="rabbitSettings" class="settings-grid hidden" style="margin-top:16px">
+        <div class="section-label">RabbitMQ · настройки-заготовки</div>
+        <div class="field wide"><label for="rabbitURL">AMQP URL</label><input id="rabbitURL" value="amqp://guest:guest@127.0.0.1:5672/" placeholder="amqp://user:password@host:5672/vhost"></div>
+        <div class="field"><label for="rabbitQueue">Queue</label><input id="rabbitQueue" value="events" placeholder="events"></div>
+        <div class="field"><label for="rabbitExchange">Exchange</label><input id="rabbitExchange" placeholder="events.exchange"></div>
+        <div class="field"><label for="rabbitRoutingKey">Routing key</label><input id="rabbitRoutingKey" placeholder="events.*"></div>
+      </div>
+      <div id="placeholderNote" class="notice warn hidden" style="margin-top:14px">Этот адаптер пока не подключён. Настройки Kafka/RabbitMQ — UI-заготовки; запросы к ним не выполняются.</div>
+      <div id="testResult" class="notice hidden" style="margin-top:14px"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>Параметры просмотра</h2><span class="pill">Все даты отправляются в RFC3339 / UTC</span></div>
+    <div class="panel-body">
+      <div class="settings-grid">
+        <div class="field wide"><label for="start">Период с</label><input id="start" type="datetime-local" step="1" required></div>
+        <div class="field wide"><label for="end">Период по</label><input id="end" type="datetime-local" step="1" required></div>
+        <div class="field half"><label for="limit">Сколько показать</label><input id="limit" type="number" min="1" max="5000" value="200"></div>
+        <div class="field half"><label for="timeoutSeconds">Тайм-аут, сек</label><input id="timeoutSeconds" type="number" min="1" max="300" value="30"></div>
+        <div class="field half"><label for="maxScan">Макс. сообщений просмотреть</label><input id="maxScan" type="number" min="1" max="500000" value="100000"></div>
+      </div>
+      <div class="range-row"><button class="btn" data-range="15m">15 минут</button><button class="btn" data-range="1h">1 час</button><button class="btn" data-range="6h">6 часов</button><button class="btn" data-range="24h">24 часа</button><button class="btn" data-range="7d">7 дней</button><button class="btn" id="resetRange">Сбросить на последний час</button></div>
+      <div class="toolbar" style="margin-top:16px"><button class="btn primary" id="queryBtn">Загрузить сообщения</button><button class="btn" id="csvBtn" disabled>Экспорт CSV</button><span id="queryHint" class="hint">Выберите stream, период и лимит.</span></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>Результаты</h2><span id="resultLabel" class="pill">Ожидание запроса</span></div>
+    <div class="panel-body" style="padding-bottom:14px"><div class="summary" id="metrics"><div class="metric"><b>—</b><span>Показано сообщений</span></div><div class="metric"><b>—</b><span>Просмотрено сообщений</span></div><div class="metric"><b>—</b><span>Время запроса</span></div></div><div id="resultNote" class="notice hidden" style="margin-top:13px"></div></div>
+    <div id="empty" class="empty">Задайте настройки и нажмите «Загрузить сообщения».</div>
+    <div id="tableWrap" class="table-wrap hidden"><table id="messagesTable"><thead></thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="detailPanel" class="panel hidden">
+    <div class="panel-head"><h2>Сообщение</h2><span id="detailMeta" class="pill"></span></div>
+    <div class="panel-body"><div class="detail"><div><h3>Payload (JSON или текст)</h3><pre id="rawPayload"></pre></div><div><h3>NATS headers</h3><pre id="rawHeaders"></pre></div></div></div>
+  </section>
+  <div class="footer">Локальный просмотрщик: пароль и token не сохраняются в браузере. По умолчанию сервер слушает только 127.0.0.1.</div>
+</main>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  let currentResponse = null;
+  let selectedIndex = -1;
+  const persistentFields = ['source','natsURL','stream','subject','user','limit','timeoutSeconds','maxScan','kafkaBrokers','kafkaTopic','kafkaGroup','rabbitURL','rabbitQueue','rabbitExchange','rabbitRoutingKey'];
+
+  function localInputValue(date) {
+    const pad = n => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  }
+  function setRange(durationMs) {
+    const now = new Date();
+    $('end').value = localInputValue(now);
+    $('start').value = localInputValue(new Date(now.getTime() - durationMs));
+  }
+  function restoreSettings() {
+    try {
+      const values = JSON.parse(localStorage.getItem('natsViewerSettings') || '{}');
+      persistentFields.forEach(id => { if (values[id] !== undefined) $(id).value = values[id]; });
+    } catch (_) {}
+    if (!$('start').value || !$('end').value) setRange(60 * 60 * 1000);
+    updateSourceUI();
+  }
+  function saveSettings() {
+    const values = {};
+    persistentFields.forEach(id => values[id] = $(id).value);
+    // Password and token deliberately are not persisted.
+    localStorage.setItem('natsViewerSettings', JSON.stringify(values));
+  }
+  function updateSourceUI() {
+    const source = $('source').value;
+    const isNATS = source === 'nats';
+    const isKafka = source === 'kafka';
+    const isRabbit = source === 'rabbitmq';
+    $('kafkaSettings').classList.toggle('hidden', !isKafka);
+    $('rabbitSettings').classList.toggle('hidden', !isRabbit);
+    $('placeholderNote').classList.toggle('hidden', isNATS);
+    $('placeholderNote').textContent = isKafka
+      ? 'Kafka выбран. Поля ниже сохранены как заготовка интерфейса; реальный Kafka consumer и поиск по историческому диапазону ещё не реализованы.'
+      : 'RabbitMQ выбран. Поля ниже сохранены как заготовка интерфейса; AMQP consumer и выбор исторических сообщений ещё не реализованы.';
+    ['natsURL','stream','subject','user','password','token'].forEach(id => $(id).disabled = !isNATS);
+    ['kafkaBrokers','kafkaTopic','kafkaGroup'].forEach(id => $(id).disabled = !isKafka);
+    ['rabbitURL','rabbitQueue','rabbitExchange','rabbitRoutingKey'].forEach(id => $(id).disabled = !isRabbit);
+    $('testBtn').disabled = !isNATS;
+    $('queryBtn').disabled = !isNATS;
+    $('queryHint').textContent = isNATS ? 'Будут показаны последние N сообщений за период.' : 'Адаптер выбран, но пока является заглушкой.';
+    setStatus(isNATS ? 'Не подключено' : 'Адаптер-заготовка', '');
+  }
+  function setStatus(text, type) {
+    $('status').textContent = text;
+    $('status').className = 'status' + (type ? ' ' + type : '');
+  }
+  function reqBody() {
+    const start = new Date($('start').value);
+    const end = new Date($('end').value);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) throw new Error('Укажите обе даты и время периода.');
+    return {
+      source: $('source').value,
+      natsURL: $('natsURL').value.trim(),
+      stream: $('stream').value.trim(),
+      subject: $('subject').value.trim(),
+      user: $('user').value,
+      password: $('password').value,
+      token: $('token').value,
+      start: start.toISOString(),
+      end: end.toISOString(),
+      limit: Number($('limit').value),
+      timeoutSeconds: Number($('timeoutSeconds').value),
+      maxScan: Number($('maxScan').value)
+    };
+  }
+  async function api(path, body) {
+    const response = await fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+    const value = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(value.error || `HTTP ${response.status}`);
+    return value;
+  }
+  async function testConnection() {
+    if ($('source').value !== 'nats') { updateSourceUI(); return; }
+    const btn = $('testBtn'); btn.disabled = true; btn.textContent = 'Проверка…';
+    $('testResult').classList.remove('hidden'); $('testResult').textContent = 'Проверяем подключение и stream…';
+    try {
+      const body = reqBody();
+      const result = await api('/api/test', body);
+      setStatus('NATS подключён', 'good');
+      const subjectList = Array.isArray(result.subjects) ? result.subjects.join(', ') : '';
+      $('testResult').textContent = `Подключение успешно. Stream: ${result.stream}; сообщений в stream: ${result.messages}; размер: ${formatBytes(result.bytes)}; sequence: ${result.firstSequence}–${result.lastSequence}; subjects: ${subjectList || 'не указаны'}.`;
+    } catch (err) {
+      setStatus('Ошибка подключения', 'bad'); $('testResult').textContent = err.message;
+    } finally { btn.disabled = false; btn.textContent = 'Проверить подключение'; }
+  }
+  async function queryMessages() {
+    if ($('source').value !== 'nats') { updateSourceUI(); return; }
+    const btn = $('queryBtn'); btn.disabled = true; btn.textContent = 'Загрузка…';
+    $('queryHint').textContent = 'Читаем сохранённые сообщения JetStream…';
+    $('resultNote').classList.add('hidden');
+    try {
+      const body = reqBody();
+      if (!body.stream) throw new Error('Укажите имя JetStream stream.');
+      if (body.limit < 1 || body.limit > 5000) throw new Error('«Сколько показать» должно быть от 1 до 5000.');
+      if (new Date(body.end) <= new Date(body.start)) throw new Error('Конец периода должен быть позже начала.');
+      saveSettings();
+      const result = await api('/api/query', body);
+      currentResponse = result;
+      renderResults(result);
+      setStatus('Запрос выполнен', 'good');
+      $('queryHint').textContent = `Готово за ${result.durationMs} мс.`;
+    } catch (err) {
+      setStatus('Ошибка запроса', 'bad');
+      $('resultLabel').textContent = 'Ошибка';
+      $('resultNote').classList.remove('hidden'); $('resultNote').textContent = err.message;
+      $('queryHint').textContent = 'Исправьте настройки и повторите запрос.';
+    } finally { btn.disabled = $('source').value !== 'nats'; btn.textContent = 'Загрузить сообщения'; }
+  }
+  function formatBytes(n) {
+    if (n < 1024) return `${n} B`;
+    if (n < 1024*1024) return `${(n/1024).toFixed(1)} KiB`;
+    return `${(n/1024/1024).toFixed(1)} MiB`;
+  }
+  function valueText(value) {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'object') return JSON.stringify(value);
+    return String(value);
+  }
+  function addText(parent, tag, text) {
+    const node = document.createElement(tag); node.textContent = text; parent.appendChild(node); return node;
+  }
+  function renderResults(result) {
+    const table = $('messagesTable');
+    const thead = table.querySelector('thead'), tbody = table.querySelector('tbody');
+    thead.replaceChildren(); tbody.replaceChildren(); selectedIndex = -1;
+    const headers = ['time','subject','streamSequence','consumerSequence', ...result.fields];
+    const headerLabels = {'time':'Время (UTC)','subject':'Subject','streamSequence':'Stream seq','consumerSequence':'Consumer seq'};
+    const trh = document.createElement('tr');
+    headers.forEach(key => addText(trh, 'th', headerLabels[key] || key)); thead.appendChild(trh);
+    result.messages.forEach((m, index) => {
+      const tr = document.createElement('tr'); tr.dataset.index = String(index);
+      const values = [new Date(m.time).toLocaleString(), m.subject, m.streamSequence, m.consumerSequence, ...result.fields.map(f => valueText(m.fields?.[f]))];
+      values.forEach((value, i) => {
+        const td = addText(tr, 'td', valueText(value));
+        if (i === 0) td.title = m.time;
+        else td.title = valueText(value);
+      });
+      tr.addEventListener('click', () => selectMessage(index)); tbody.appendChild(tr);
+    });
+    $('empty').classList.toggle('hidden', result.messages.length > 0);
+    $('empty').textContent = result.messages.length ? '' : 'За выбранный период сообщений не найдено.';
+    $('tableWrap').classList.toggle('hidden', result.messages.length === 0);
+    $('resultLabel').textContent = `${result.count} строк · ${result.stream}`;
+    $('metrics').replaceChildren();
+    [[''+result.count,'Показано сообщений'],[''+result.scanned,'Просмотрено сообщений'],[result.durationMs+' мс','Время запроса']].forEach(([n,label]) => {
+      const box = document.createElement('div'); box.className='metric'; addText(box,'b',n); addText(box,'span',label); $('metrics').appendChild(box);
+    });
+    $('resultNote').classList.remove('hidden'); $('resultNote').classList.toggle('warn', !!result.truncated); $('resultNote').textContent = result.note || '';
+    $('csvBtn').disabled = result.messages.length === 0;
+    $('detailPanel').classList.add('hidden');
+  }
+  function selectMessage(index) {
+    if (!currentResponse) return;
+    selectedIndex = index;
+    document.querySelectorAll('#messagesTable tbody tr').forEach(tr => tr.classList.toggle('selected', Number(tr.dataset.index) === index));
+    const m = currentResponse.messages[index];
+    $('detailPanel').classList.remove('hidden');
+    $('detailMeta').textContent = `${m.time} · ${m.subject} · seq ${m.streamSequence}`;
+    $('rawPayload').textContent = m.raw || '';
+    $('rawHeaders').textContent = JSON.stringify(m.headers || {}, null, 2);
+  }
+  function exportCSV() {
+    if (!currentResponse) return;
+    const headers = ['time','subject','streamSequence','consumerSequence', ...currentResponse.fields];
+    const lines = [headers.map(csvEscape).join(',')];
+    currentResponse.messages.forEach(m => {
+      const row = [m.time,m.subject,m.streamSequence,m.consumerSequence,...currentResponse.fields.map(k => valueText(m.fields?.[k]))];
+      lines.push(row.map(csvEscape).join(','));
+    });
+    const blob = new Blob(['\ufeff'+lines.join('\r\n')], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob); const a = document.createElement('a');
+    a.href = url; a.download = `nats-${currentResponse.stream}-${new Date().toISOString().replace(/[:.]/g,'-')}.csv`; a.click(); URL.revokeObjectURL(url);
+  }
+  function csvEscape(v) { const s = valueText(v); return '"'+s.replaceAll('"','""')+'"'; }
+
+  $('source').addEventListener('change', updateSourceUI);
+  $('testBtn').addEventListener('click', testConnection);
+  $('queryBtn').addEventListener('click', queryMessages);
+  $('csvBtn').addEventListener('click', exportCSV);
+  $('resetRange').addEventListener('click', () => setRange(60*60*1000));
+  document.querySelectorAll('[data-range]').forEach(btn => btn.addEventListener('click', () => {
+    const durations = {'15m':15*60*1000,'1h':60*60*1000,'6h':6*60*60*1000,'24h':24*60*60*1000,'7d':7*24*60*60*1000}; setRange(durations[btn.dataset.range]);
+  }));
+  persistentFields.forEach(id => $(id).addEventListener('change', () => { saveSettings(); if (id === 'source') updateSourceUI(); }));
+  restoreSettings();
+})();
+</script>
+</body>
+</html>
